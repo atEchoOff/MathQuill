@@ -557,7 +557,7 @@ LatexCmds['.'] = P(DigitGroupingChar, function(_, super_) {
 LatexCmds["'"] = LatexCmds.prime = bind(VanillaSymbol, "'", '&prime;', 'prime');
 LatexCmds['″'] = LatexCmds.dprime = bind(VanillaSymbol, '″', '&Prime;', 'double prime');
 
-LatexCmds.backslash = bind(VanillaSymbol,'\\backslash ','\\', 'backslash');
+LatexCmds.without = LatexCmds.backslash = bind(VanillaSymbol,'\\backslash ','\\', 'backslash');
 if (!CharCmds['\\']) CharCmds['\\'] = LatexCmds.backslash;
 
 LatexCmds.$ = bind(VanillaSymbol, '\\$', '$', 'dollar');
@@ -631,17 +631,15 @@ LatexCmds.omega = P(Variable, function(_, super_) {
 });
 
 //why can't anybody FUCKING agree on these
-LatexCmds.phi = //W3C or Unicode?
-  bind(Variable,'\\phi ','&#981;', 'phi');
+LatexCmds.a = bind(Variable, '\\alpha ', '&alpha;', 'alpha');
+LatexCmds.b = bind(Variable, '\\beta ', '&beta;', 'beta');
+LatexCmds.d = bind(Variable, '\\delta ', '&delta;', 'delta');
 
-LatexCmds.phiv = //Elsevier and 9573-13
+LatexCmds.phi = LatexCmds.phiv = //Elsevier and 9573-13
 LatexCmds.varphi = //AMS and LaTeX
   bind(Variable,'\\varphi ','&phi;', 'phi');
 
-LatexCmds.epsilon = //W3C or Unicode?
-  bind(Variable,'\\epsilon ','&#1013;', 'epsilon');
-
-LatexCmds.epsiv = //Elsevier and 9573-13
+LatexCmds.epsilon = LatexCmds.e = LatexCmds.epsiv = //Elsevier and 9573-13
 LatexCmds.varepsilon = //AMS and LaTeX
   bind(Variable,'\\varepsilon ','&epsilon;', 'epsilon');
 

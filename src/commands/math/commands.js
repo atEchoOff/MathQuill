@@ -530,6 +530,10 @@ LatexCmds.product = bind(SummationNotation,'\\prod ','&prod;', 'product');
 LatexCmds.coprod =
 LatexCmds.coproduct = bind(SummationNotation,'\\coprod ','&#8720;', 'co product');
 
+LatexCmds.bigcup = LatexCmds.bigunion = bind(SummationNotation,'\\bigcup ','&xcup;', 'big union');
+LatexCmds.bigcap = LatexCmds.bigintersect = LatexCmds.bigintersection =
+  bind(SummationNotation,'\\bigcap ','&xcap;', 'big intersect');
+
 LatexCmds['∫'] =
 LatexCmds['int'] =
 LatexCmds.integral = P(SummationNotation, function(_, super_) {
@@ -1039,10 +1043,10 @@ function bindCharBracketPair(open, ctrlSeq, name) {
 bindCharBracketPair('(', null, 'parenthesis');
 bindCharBracketPair('[', null, 'bracket');
 bindCharBracketPair('{', '\\{', 'brace');
-LatexCmds.langle = bind(Bracket, L, '&lang;', '&rang;', '\\langle ', '\\rangle ');
+LatexCmds.angle = LatexCmds.langle = bind(Bracket, L, '&lang;', '&rang;', '\\langle ', '\\rangle ');
 LatexCmds.rangle = bind(Bracket, R, '&lang;', '&rang;', '\\langle ', '\\rangle ');
 CharCmds['|'] = bind(Bracket, L, '|', '|', '|', '|');
-LatexCmds.lVert = bind(Bracket, L, '&#8741;', '&#8741;', '\\lVert ', '\\rVert ');
+LatexCmds.norm = LatexCmds.lVert = bind(Bracket, L, '&#8741;', '&#8741;', '\\lVert ', '\\rVert ');
 LatexCmds.rVert = bind(Bracket, R, '&#8741;', '&#8741;', '\\lVert ', '\\rVert ');
 
 

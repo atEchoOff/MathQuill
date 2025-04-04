@@ -12,6 +12,8 @@ LatexCmds.otimes = P(BinaryOperator, function(_, super_) {
   };
 });
 
+LatexCmds.isom = bind(BinaryOperator, '\\cong ', '&cong;', "isometric to");
+
 LatexCmds['∗'] = LatexCmds.ast = LatexCmds.star = LatexCmds.loast = LatexCmds.lowast =
   bind(BinaryOperator,'\\ast ','&lowast;', 'low asterisk');
 LatexCmds.therefor = LatexCmds.therefore =
@@ -77,7 +79,7 @@ LatexCmds.mathbb = P(MathCommand, function(_) {
     var optWhitespace = Parser.optWhitespace;
     return optWhitespace.then(string('{'))
           .then(optWhitespace)
-          .then(regex(/^[NPZQRCH]/))
+          .then(regex(/^[NPZQRCHF]/))
           .skip(optWhitespace)
           .skip(string('}'))
           .map(function(c) {
@@ -87,10 +89,10 @@ LatexCmds.mathbb = P(MathCommand, function(_) {
   };
 });
 
-LatexCmds.N = LatexCmds.naturals = LatexCmds.Naturals =
+LatexCmds.N = LatexCmds.nat = LatexCmds.naturals = LatexCmds.Naturals =
   bind(VanillaSymbol,'\\mathbb{N}','&#8469;', 'naturals');
 
-LatexCmds.P =
+LatexCmds.P = LatexCmds.prob =
 LatexCmds.primes = LatexCmds.Primes =
 LatexCmds.projective = LatexCmds.Projective =
 LatexCmds.probability = LatexCmds.Probability =
@@ -102,7 +104,7 @@ LatexCmds.Z = LatexCmds.integers = LatexCmds.Integers =
 LatexCmds.Q = LatexCmds.rationals = LatexCmds.Rationals =
   bind(VanillaSymbol,'\\mathbb{Q}','&#8474;', 'rationals');
 
-LatexCmds.R = LatexCmds.reals = LatexCmds.Reals =
+LatexCmds.R = LatexCmds.real = LatexCmds.reals = LatexCmds.Reals =
   bind(VanillaSymbol,'\\mathbb{R}','&#8477;', 'reals');
 
 LatexCmds.C =
@@ -113,6 +115,12 @@ LatexCmds.complexplane = LatexCmds.Complexplane = LatexCmds.ComplexPlane =
 
 LatexCmds.H = LatexCmds.Hamiltonian = LatexCmds.quaternions = LatexCmds.Quaternions =
   bind(VanillaSymbol,'\\mathbb{H}','&#8461;', 'quaternions');
+
+LatexCmds.F = LatexCmds.field = bind(VanillaSymbol,
+  '\\mathbb{F}',
+  '&#x1D53D;',
+  'field'
+);
 
 //spacing
 LatexCmds.quad = LatexCmds.emsp = bind(VanillaSymbol,'\\quad ','    ', '4 spaces');
@@ -216,8 +224,6 @@ LatexCmds.square = bind(VanillaSymbol, '\\square ', '&#11036;', 'square');
 
 //variable-sized
 LatexCmds.oint = bind(VanillaSymbol, '\\oint ', '&#8750;', 'o int');
-LatexCmds.bigcap = bind(VanillaSymbol, '\\bigcap ', '&#8745;', 'big cap');
-LatexCmds.bigcup = bind(VanillaSymbol, '\\bigcup ', '&#8746;', 'big cup');
 LatexCmds.bigsqcup = bind(VanillaSymbol, '\\bigsqcup ', '&#8852;', 'big square cup');
 LatexCmds.bigvee = bind(VanillaSymbol, '\\bigvee ', '&#8744;', 'big vee');
 LatexCmds.bigwedge = bind(VanillaSymbol, '\\bigwedge ', '&#8743;', 'big wedge');
@@ -246,7 +252,7 @@ LatexCmds.hbar = bind(VanillaSymbol,'\\hbar ','&#8463;', 'horizontal bar');
 LatexCmds.AA = LatexCmds.Angstrom = LatexCmds.angstrom =
   bind(VanillaSymbol,'\\text\\AA ','&#8491;', 'AA');
 
-LatexCmds.ring = LatexCmds.circ = LatexCmds.circle =
+LatexCmds.ring = LatexCmds.of = LatexCmds.circ = LatexCmds.circle =
   bind(VanillaSymbol,'\\circ ','&#8728;', 'circle');
 
 LatexCmds.bull = LatexCmds.bullet = bind(VanillaSymbol,'\\bullet ','&bull;', 'bullet');
@@ -295,7 +301,7 @@ LatexCmds.iff = bind(BinaryOperator,'\\Leftrightarrow ','&hArr;', 'if and only i
 LatexCmds.hArr = LatexCmds.lrArr = LatexCmds.Leftrightarrow =
   bind(VanillaSymbol,'\\Leftrightarrow ','&hArr;', 'left and right arrow');
 
-LatexCmds.Re = LatexCmds.Real = LatexCmds.real = bind(VanillaSymbol,'\\Re ','&real;', 'real');
+LatexCmds.Re = LatexCmds.Real = bind(VanillaSymbol,'\\Re ','&real;', 'real');
 
 LatexCmds.Im = LatexCmds.imag =
 LatexCmds.image = LatexCmds.imagin = LatexCmds.imaginary = LatexCmds.Imaginary =
@@ -333,6 +339,3 @@ LatexCmds.cap = LatexCmds.intersect = LatexCmds.intersection =
 
 // FIXME: the correct LaTeX would be ^\circ but we can't parse that
 LatexCmds.deg = LatexCmds.degree = bind(VanillaSymbol,'\\degree ','&deg;', 'degrees');
-
-LatexCmds.ang = LatexCmds.angle = bind(VanillaSymbol,'\\angle ','&ang;', 'angle');
-LatexCmds.measuredangle = bind(VanillaSymbol,'\\measuredangle ','&#8737;', 'measured angle');
