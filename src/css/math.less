@@ -109,7 +109,6 @@
   }
 
   .mq-text-mode.mq-hasCursor {
-    box-shadow: inset darkgray 0 .1em .2em;
     padding: 0 .1em;
     margin: 0 -.1em;
 
@@ -175,6 +174,19 @@
 
   .mq-bold {
     font-weight: bold;
+  }
+
+  .mq-label {
+    position:fixed;
+    right: 100px;
+  }
+
+  .mq-label::before {
+    content: "(";
+  }
+
+  .mq-label::after {
+    content: ")";
   }
 
   .mq-italic {
