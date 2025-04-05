@@ -77,6 +77,26 @@ var SVG_SYMBOLS = {
       '<svg preserveAspectRatio="none" viewBox="0 0 10 54">' +
         '<path d="M3.2 0 L6.8 27 L3.2 54 L2.2 54 L5.8 27 L2.2 0" />' +
       '</svg>'
+  },
+  '&#10627;': {
+    width: '.55em',
+    html:
+    '<svg preserveAspectRatio="none" viewBox="-50 -350 1027 1864"><path d="M100 582Q100 601 133 605Q395 633 395 859V1172Q395 1514 786 1514Q827 1514 827 1492Q827 1472 809.5 1469.0Q792 1466 765 1463V-299Q792 -302 809.5 -305.0Q827 -308 827 -328Q827 -350 786 -350Q395 -350 395 -8V305Q395 531 133 559Q100 563 100 582ZM290 582Q394 552 438 483Q477 421 477 309V32Q477 -228 683 -286V1450Q477 1392 477 1132V855Q477 743 438 681Q394 612 290 582Z" /></svg>'
+  },
+  '&#10628;': {
+    width: '.55em',
+    html:
+    '<svg preserveAspectRatio="none" viewBox="6 -350 1027 1864"><path d="M156 -328Q156 -308 173.5 -305.0Q191 -302 218 -299V1463Q191 1466 173.5 1469.0Q156 1472 156 1492Q156 1514 197 1514Q588 1514 588 1172V859Q588 633 850 605Q883 601 883 582Q883 563 850 559Q588 531 588 305V-8Q588 -350 197 -350Q156 -350 156 -328ZM300 -286Q506 -228 506 32V309Q506 421 545 483Q589 552 693 582Q589 612 545 681Q506 743 506 855V1132Q506 1392 300 1450Z" /></svg>'
+  },
+  '&#12314;': {
+    width: '.55em',
+    html:
+    '<svg preserveAspectRatio="none" viewBox="-38 -350 759 1864"><path d="M112 -350V1514H503Q571 1514 571 1474Q571 1433 503 1433H394V-268H503Q571 -268 571 -309Q571 -350 503 -350ZM193 -268H313V1433H193Z" /></svg>'
+  },
+  '&#12315;': {
+    width: '.55em',
+    html:
+    '<svg preserveAspectRatio="none" viewBox="-39 -350 759 1864"><path d="M111 -309Q111 -268 179 -268H288V1433H179Q111 1433 111 1474Q111 1514 179 1514H570V-350H179Q111 -350 111 -309ZM369 -268H489V1433H369Z" /></svg>'
   }
 };
 
@@ -1096,6 +1116,10 @@ var OPP_BRACKS = {
   '|': '|',
   '\\lVert ' : '\\rVert ',
   '\\rVert ' : '\\lVert ',
+  '\\lavg ' : '\\ravg ',
+  '\\ravg ' : '\\lavg ',
+  '\\ljump ' : '\\rjump ',
+  '\\rjump ' : '\\ljump '
 };
 
 var BRACKET_NAMES = {
@@ -1119,6 +1143,10 @@ CharCmds['|'] = bind(Bracket, L, '|', '|', '|', '|');
 LatexCmds.norm = LatexCmds.lVert = bind(Bracket, L, '&#8741;', '&#8741;', '\\lVert ', '\\rVert ');
 LatexCmds.rVert = bind(Bracket, R, '&#8741;', '&#8741;', '\\lVert ', '\\rVert ');
 
+LatexCmds.avg = LatexCmds.lavg = bind(Bracket, L, '&#10627;', '&#10628;', '\\lavg ', '\\ravg ');
+LatexCmds.ravg = bind(Bracket, R, '&#10627;', '&#10628;', '\\lavg ', '\\ravg ');
+LatexCmds.jump = LatexCmds.ljump = bind(Bracket, L, '&#12314;', '&#12315;', '\\ljump ', '\\rjump ');
+LatexCmds.rjump = bind(Bracket, R, '&#12314;', '&#12315;', '\\ljump ', '\\rjump ');
 
 LatexCmds.left = P(MathCommand, function(_) {
   _.parser = function() {
@@ -1127,17 +1155,21 @@ LatexCmds.left = P(MathCommand, function(_) {
     var succeed = Parser.succeed;
     var optWhitespace = Parser.optWhitespace;
 
-    return optWhitespace.then(regex(/^(?:[([|]|\\\{|\\langle(?![a-zA-Z])|\\lVert(?![a-zA-Z]))/))
+    return optWhitespace.then(regex(/^(?:[([|]|\\\{|\\langle(?![a-zA-Z])|\\lVert(?![a-zA-Z])|\\lavg(?![a-zA-Z])|\\ljump(?![a-zA-Z]))/))
       .then(function(ctrlSeq) {
         var open = ctrlSeq.replace(/^\\/, '');
 	if (ctrlSeq=="\\langle") { open = '&lang;'; ctrlSeq = ctrlSeq + ' '; }
 	if (ctrlSeq=="\\lVert") { open = '&#8741;'; ctrlSeq = ctrlSeq + ' '; }
+  if (ctrlSeq=="\\lavg") { open = '&#10627;'; ctrlSeq = ctrlSeq + ' '; }
+  if (ctrlSeq=="\\ljump") { open = '&#12314;'; ctrlSeq = ctrlSeq + ' '; }
         return latexMathParser.then(function (block) {
           return string('\\right').skip(optWhitespace)
-            .then(regex(/^(?:[\])|]|\\\}|\\rangle(?![a-zA-Z])|\\rVert(?![a-zA-Z]))/)).map(function(end) {
+            .then(regex(/^(?:[\])|]|\\\}|\\rangle(?![a-zA-Z])|\\rVert(?![a-zA-Z])|\\ravg(?![a-zA-Z])|\\rjump(?![a-zA-Z]))/)).map(function(end) {
               var close = end.replace(/^\\/, '');
 	      if (end=="\\rangle") { close = '&rang;'; end = end + ' '; }
 	      if (end=="\\rVert") { close = '&#8741;'; end = end + ' '; }
+        if (end=="\\ravg") { close = '&#10628;'; end = end + ' '; }
+        if (end=="\\rjump") { close = '&#12315;'; end = end + ' '; }
               var cmd = Bracket(0, open, close, ctrlSeq, end);
               cmd.blocks = [ block ];
               block.adopt(cmd, 0, 0);

@@ -47,4 +47,4 @@ def extract_char_to_svg(ttf_path, character, output_svg_path, padding=150):
     print(f"Saved SVG for '{character}' with margin to: {output_svg_path}")
 
 # Example usage
-extract_char_to_svg("Symbola-basic.ttf", "\u230A", "bracket.svg")
+extract_char_to_svg("Symbola-basic.ttf", "character", "bracket.svg")
