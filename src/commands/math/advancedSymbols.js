@@ -84,13 +84,18 @@ LatexCmds.mathbb = P(MathCommand, function(_) {
           .skip(string('}'))
           .map(function(c) {
               // instantiate the class for the matching char
+              if (c === "1") {
+                c = "one";
+              } else if (c === "0") {
+                c = "zero";
+              }
               return LatexCmds[c]();
     });
   };
 });
 
-LatexCmds['0'] = LatexCmds.zero = bind(VanillaSymbol, '\\mathbb{0}', "&#120792;", "zero");
-LatexCmds['1'] = LatexCmds.one = bind(VanillaSymbol, '\\mathbb{1}', "&#120793;", "one");
+LatexCmds.zero = bind(VanillaSymbol, '\\mathbb{0}', "&#120792;", "zero");
+LatexCmds.one = bind(VanillaSymbol, '\\mathbb{1}', "&#120793;", "one");
 
 LatexCmds.N = LatexCmds.nat = LatexCmds.naturals = LatexCmds.Naturals =
   bind(VanillaSymbol,'\\mathbb{N}','&#8469;', 'naturals');
