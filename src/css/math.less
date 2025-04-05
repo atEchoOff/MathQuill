@@ -486,4 +486,43 @@
       }
     }
   }
+
+  // Please see the jaltekruse fork of mathquill, the lrn/matrix branch has matrix support!
+  // https://github.com/jaltekruse/mathquill/blob/lrn/matrix/src/commands/math/commands.js
+  // Thank you to eoghanmcilwaine (Eoghan McIlwaine) for writing this :)
+  // The code is slightly modified to work with newer version of mathquill
+  .mq-matrix {
+    vertical-align: middle;
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+
+    // Fix vertical parenthesis alignment around matrices
+    .mq-paren {
+      vertical-align: top;
+      -webkit-transform-origin: center .02em;
+      -moz-transform-origin: center .02em;
+      -ms-transform-origin: center .02em;
+      -o-transform-origin: center .02em;
+      transform-origin: center .02em;
+    }
+
+    table {
+      width: auto;
+      border-bottom: none;
+      border-spacing: 3px;
+      border-collapse: separate;
+      &.mq-rows-1 { /* better alignment when there's just one row */
+        vertical-align: middle;
+        margin-bottom: 1px;
+      }
+    }
+
+    td {
+      border: none;
+      width: auto; /* defensive resets */
+      padding: 0.1em 0.3em;
+      vertical-align: baseline;
+      text-align: center;
+    }
+  }
 }

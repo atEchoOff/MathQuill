@@ -12,6 +12,7 @@
 
 var jQuery = window.jQuery,
   undefined,
+  mqBlockId = "mathquill-block-id",
   min = Math.min,
   max = Math.max;
 
