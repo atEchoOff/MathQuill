@@ -176,6 +176,9 @@ LatexCmds.mathrm = P(Style, function(_, super_) {
     return true;
   };
 });
+
+LatexCmds.fnt = LatexCmds.vect = bind(Style, '\\fnt', 'span', 'class="mq-bold mq-font"', 'Vector');
+LatexCmds.vecf = bind(Style, '\\vecf', 'span', 'class="mq-bold mq-italic mq-font"', 'Vector');
 LatexCmds.mathit = bind(Style, '\\mathit', 'i', 'class="mq-font"', 'Italic Font');
 LatexCmds.mathbf = bind(Style, '\\mathbf', 'b', 'class="mq-font"', 'Bold Font');
 LatexCmds.mathsf = bind(Style, '\\mathsf', 'span', 'class="mq-sans-serif mq-font"', 'Serif Font');

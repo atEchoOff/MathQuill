@@ -79,7 +79,7 @@ LatexCmds.mathbb = P(MathCommand, function(_) {
     var optWhitespace = Parser.optWhitespace;
     return optWhitespace.then(string('{'))
           .then(optWhitespace)
-          .then(regex(/^[NPZQRCHF]/))
+          .then(regex(/^[NPZQRCHF01]/))
           .skip(optWhitespace)
           .skip(string('}'))
           .map(function(c) {
@@ -88,6 +88,9 @@ LatexCmds.mathbb = P(MathCommand, function(_) {
     });
   };
 });
+
+LatexCmds['0'] = LatexCmds.zero = bind(VanillaSymbol, '\\mathbb{0}', "&#120792;", "zero");
+LatexCmds['1'] = LatexCmds.one = bind(VanillaSymbol, '\\mathbb{1}', "&#120793;", "one");
 
 LatexCmds.N = LatexCmds.nat = LatexCmds.naturals = LatexCmds.Naturals =
   bind(VanillaSymbol,'\\mathbb{N}','&#8469;', 'naturals');
