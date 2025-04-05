@@ -177,6 +177,8 @@ LatexCmds.mathrm = P(Style, function(_, super_) {
   };
 });
 
+LatexCmds.aligned = bind(Style, '\\aligned', 'span', 'class="mq-aligned"', '');
+
 LatexCmds.fnt = LatexCmds.vect = bind(Style, '\\fnt', 'span', 'class="mq-bold mq-font"', 'Vector');
 LatexCmds.vecf = bind(Style, '\\vecf', 'span', 'class="mq-bold mq-italic mq-font"', 'Vector');
 LatexCmds.mathit = bind(Style, '\\mathit', 'i', 'class="mq-font"', 'Italic Font');
@@ -1319,8 +1321,64 @@ Environments.matrix = P(Environment, function(_, super_) {
       if (parens.length) {
         scale(parens, min(1 + .2*(height - 1), 1.2), 1.05*height);
       }
+
+      this.align();
     }, 0);
   };
+
+  // Align "mq-aligned" elements vertically
+  _.align = function() {
+    table = this.jQ.children('table')[0];
+    let maxCols = 0;
+    for (const row of table.rows) {
+      maxCols = Math.max(maxCols, row.cells.length);
+    }
+
+    if (maxCols === 0) {
+      return; // Skip empty tables
+    }
+
+    // Loop through cols
+    for (let colIndex = 0; colIndex < maxCols; colIndex++) {
+      let maxOffset = 0;
+      const cellsInColumn = [];
+
+      // Only store elements with an mq-aligned
+      for (const row of table.rows) {
+        const cell = row.cells[colIndex];
+        if (cell) {
+          const operatorSpan = cell.querySelector('span.mq-aligned');
+          if (operatorSpan) {
+            cellsInColumn.push({
+              cell: cell,
+              operatorSpan: operatorSpan
+            });
+          }
+        }
+      }
+
+      // Get maximum offset, that one gets no padding
+      cellsInColumn.forEach(item => {
+        let paddingLeft = parseInt(item.cell.style.paddingLeft, 10);
+        if (paddingLeft !== paddingLeft) { // isnt that wack?
+          // Its NaN, set to 0
+          paddingLeft = 0;
+        }
+        // Offset from "0" (left if there were no padding)
+        const currentOffset = item.operatorSpan.offsetLeft - paddingLeft;
+        item.offset = currentOffset;
+        maxOffset = Math.max(maxOffset, currentOffset);
+      });
+
+      // Align!
+      cellsInColumn.forEach(item => {
+        const requiredMargin = maxOffset - item.offset;
+        item.cell.style.paddingLeft = Math.max(0, requiredMargin) + 'px';
+      });
+    }
+  }
+
+
   _.latex = function() {
     var latex = '';
     var row;
@@ -1640,6 +1698,15 @@ Environments.matrix = P(Environment, function(_, super_) {
   };
 });
 
+Environments.align = P(Matrix, function(_, super_) {
+  _.envType = 'align';
+
+  _.parentheses = {
+    left: '',
+    right: ''
+  };
+});
+
 Environments.pmatrix = P(Matrix, function(_, super_) {
   _.envType = 'pmatrix';
 
@@ -1716,7 +1783,7 @@ var MatrixCell = P(MathBlock, function(_, super_) {
       return this.parent.insert('addColumn', this, ctrlr);
       break;
     case 'Shift-Down':
-    return this.parent.insert('addRow', this, ctrlr);
+      return this.parent.insert('addRow', this, ctrlr);
       break;
     }
     return super_.keystroke.apply(this, arguments);

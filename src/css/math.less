@@ -517,7 +517,7 @@
     table {
       width: auto;
       border-bottom: none;
-      border-spacing: 3px;
+      border-spacing: .5em 3px;
       border-collapse: separate;
       &.mq-rows-1 { /* better alignment when there's just one row */
         vertical-align: middle;
@@ -528,9 +528,13 @@
     td {
       border: none;
       width: auto; /* defensive resets */
-      padding: 0.1em 0.3em;
+      padding: none;
       vertical-align: baseline;
-      text-align: center;
+      text-align: left; // FIXME I hate this but it is necessary for align
     }
+  }
+
+  .mq-aligned {
+    color:red;
   }
 }
