@@ -1322,7 +1322,9 @@ Environments.matrix = P(Environment, function(_, super_) {
         scale(parens, min(1 + .2*(height - 1), 1.2), 1.05*height);
       }
 
-      this.align();
+      if (this.isAlign) {
+        this.align();
+      }
     }, 0);
   };
 
@@ -1416,7 +1418,7 @@ Environments.matrix = P(Environment, function(_, super_) {
     });
 
     this.htmlTemplate =
-        '<span class="mq-matrix mq-non-leaf">'
+        '<span class="mq-matrix' + (this.isAlign ? ' mq-align' : '') + ' mq-non-leaf">'
       +   parenHtml(this.parentheses.left)
       +   '<table class="mq-non-leaf">'
       +     trs.replace(/\$tds/g, function () {
@@ -1445,7 +1447,7 @@ Environments.matrix = P(Environment, function(_, super_) {
     return this.ctrlSeq.replace('\\', '');
   }
   _.generateHtmlTemplate = function(numRows, numColumns) {
-    var matrix = '<span class="mq-matrix mq-non-leaf">' + parenTemplate(this.parentheses.left);
+    var matrix = '<span class="mq-matrix' + (this.isAlign ? ' mq-align' : '') + ' mq-non-leaf">' + parenTemplate(this.parentheses.left);
     matrix += '<table class="mq-non-leaf">';
 
     numRows = 1;
@@ -1700,6 +1702,7 @@ Environments.matrix = P(Environment, function(_, super_) {
 
 Environments.align = P(Matrix, function(_, super_) {
   _.envType = 'align';
+  _.isAlign = true;
 
   _.parentheses = {
     left: '',

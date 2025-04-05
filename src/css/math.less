@@ -530,11 +530,15 @@
       width: auto; /* defensive resets */
       padding: none;
       vertical-align: baseline;
-      text-align: left; // FIXME I hate this but it is necessary for align
+      text-align: center;
     }
   }
 
-  .mq-aligned {
+  .mq-align .mq-aligned {
     color:red;
+  }
+
+  .mq-align td {
+    text-align:left;
   }
 }
