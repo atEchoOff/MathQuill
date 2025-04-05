@@ -97,6 +97,10 @@ var SVG_SYMBOLS = {
     width: '.55em',
     html:
     '<svg preserveAspectRatio="none" viewBox="-39 -350 759 1864"><path d="M111 -309Q111 -268 179 -268H288V1433H179Q111 1433 111 1474Q111 1514 179 1514H570V-350H179Q111 -350 111 -309ZM369 -268H489V1433H369Z" /></svg>'
+  },
+  '&#65080;': {
+    html:
+    '<svg preserveAspectRatio="none" viewBox="92 -241 1864 727"><path d="M1956 -200Q1956 -241 1934 -241Q1915 -241 1911 -223Q1902 -69 1817 14Q1774 56 1703 68Q1669 73 1574 73H1297Q1208 73 1165 94Q1069 141 1024 296Q979 141 883 94Q841 73 752 73H475Q380 73 346 68Q275 56 232 14Q147 -69 138 -223Q134 -241 115 -241Q92 -241 92 -200Q92 -26 170 85Q221 158 286 178Q328 191 435 191H748Q865 191 932 266Q993 335 1002 453Q1004 486 1024 486Q1042 486 1045.0 468.0Q1048 450 1049 433Q1080 191 1301 191H1614Q1721 191 1763 178Q1828 158 1879 85Q1956 -24 1956 -200Z" /></svg>'
   }
 };
 
@@ -757,6 +761,27 @@ LatexCmds.fraction = P(MathCommand, function(_, super_) {
     return walkUp(this, level);
   };
 });
+
+var Underbrace =
+    LatexCmds.underbrace =
+    LatexCmds.ub = P(MathCommand, function(_, super_) {
+      _.ctrlSeq = '\\ub';
+      _.htmlTemplate =
+          '<span class="mq-fraction mq-non-leaf">'
+        +   '<span class="mq-numerator mq-ub-numerator">&0'
+        +     '<span class="underbrace">'
+        +       SVG_SYMBOLS['&#65080;'].html
+        +     '</span>'
+        +   '</span>'
+        +   '<span class="mq-denominator mq-ub-denominator">&1</span>'
+        + '</span>'
+      ;
+      _.textTemplate = ['(', ')/(', ')'];
+      _.finalizeTree = function() {
+        this.upInto = this.ends[R].upOutOf = this.ends[L];
+        this.downInto = this.ends[L].downOutOf = this.ends[R];
+      };
+    });
 
 var LiveFraction =
 LatexCmds.over =

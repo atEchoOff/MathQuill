@@ -29,9 +29,9 @@ def extract_char_to_svg(ttf_path, character, output_svg_path, padding=150):
     xMin, yMin, xMax, yMax = bounds_pen.bounds
 
     # Add padding
-    viewbox_x = xMin - padding
+    viewbox_x = xMin
     viewbox_y = yMin
-    width = (xMax - xMin) + 2 * padding
+    width = (xMax - xMin)
     height = (yMax - yMin)
 
     # Create SVG
@@ -47,4 +47,4 @@ def extract_char_to_svg(ttf_path, character, output_svg_path, padding=150):
     print(f"Saved SVG for '{character}' with margin to: {output_svg_path}")
 
 # Example usage
-extract_char_to_svg("Symbola-basic.ttf", "character", "bracket.svg")
+extract_char_to_svg("Symbola-13.otf", "\ufe37", "bracket.svg")
