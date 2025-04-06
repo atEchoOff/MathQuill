@@ -176,7 +176,8 @@ LatexCmds.mathcalI = LatexCmds.calI = LatexCmds.cali = bind(VanillaSymbol, '\\ma
 LatexCmds.mathcalH = LatexCmds.calH = LatexCmds.calh = bind(VanillaSymbol, '\\mathcal{H}', '&#x01d4d7;', "mathcal H");
 
 LatexCmds.mathcalM = LatexCmds.calM = LatexCmds.calm = bind(VanillaSymbol, '\\mathcal{M}', '&#x01d4dc;', "mathcal M");
-LatexCmds.mathcalN = LatexCmds.calN = LatexCmds.caln = bind(VanillaSymbol, '\\mathcal{N}', '&#x01d4dd;', "mathcal N");
+LatexCmds.mathcalN = LatexCmds.calN = LatexCmds.caln = bind(VanillaSymbol, '\\mathcal{N}', '&#x01d4dd;', "Null space");
+LatexCmds.mathcalR = LatexCmds.calR = LatexCmds.calr = bind(VanillaSymbol, '\\mathcal{R}', '&#x01d4e1;', "Range space");
 LatexCmds.mathcalV = LatexCmds.calV = LatexCmds.calv = bind(VanillaSymbol, '\\mathcal{V}', '&#x01d4e5;', "mathcal V");
 
 //spacing
