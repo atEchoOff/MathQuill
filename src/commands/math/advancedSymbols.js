@@ -130,6 +130,55 @@ LatexCmds.F = LatexCmds.field = bind(VanillaSymbol,
   'field'
 );
 
+//the canonical sets of numbers
+LatexCmds.mathcal = P(MathCommand, function(_) {
+  _.createLeftOf = noop;
+  _.numBlocks = function() { return 1; };
+  _.parser = function() {
+    var string = Parser.string;
+    var regex = Parser.regex;
+    var optWhitespace = Parser.optWhitespace;
+    return optWhitespace.then(string('{'))
+          .then(optWhitespace)
+          .then(regex(/^[NPZQRCHF01]/))
+          .skip(optWhitespace)
+          .skip(string('}'))
+          .map(function(c) {
+              // instantiate the class for the matching char
+              return LatexCmds[c]();
+    });
+  };
+});
+
+LatexCmds.mathcalP = LatexCmds.calP = LatexCmds.calp = bind(VanillaSymbol, '\\mathcal{P}', '&#x01d4df;', "mathcal P");
+
+LatexCmds.mathcalB = LatexCmds.calB = LatexCmds.calb = bind(VanillaSymbol, '\\mathcal{B}', '&#x01d4d1;', "mathcal B");
+
+LatexCmds.mathcalA = LatexCmds.calA = LatexCmds.cala = bind(VanillaSymbol, '\\mathcal{A}', '&#x01d4d0;', "mathcal A");
+LatexCmds.mathcalC = LatexCmds.calC = LatexCmds.calc = bind(VanillaSymbol, '\\mathcal{C}', '&#x01d4d2;', "mathcal C");
+LatexCmds.mathcalD = LatexCmds.calD = LatexCmds.cald = bind(VanillaSymbol, '\\mathcal{D}', '&#x01d4d3;', "mathcal D");
+LatexCmds.mathcalO = LatexCmds.calO = LatexCmds.calo = bind(VanillaSymbol, '\\mathcal{O}', '&#x01d4de;', "Order");
+
+LatexCmds.mathcalK = LatexCmds.calK = LatexCmds.calk = bind(VanillaSymbol, '\\mathcal{K}', '&#x01d4da;', "mathcal K");
+
+LatexCmds.mathcalE = LatexCmds.calE = LatexCmds.cale = bind(VanillaSymbol, '\\mathcal{E}', '&#x01d4d4;', "mathcal E");
+
+LatexCmds.mathcalH = LatexCmds.calH = LatexCmds.calh = bind(VanillaSymbol, '\\mathcal{H}', '&#x01d4d7;', "mathcal H");
+
+LatexCmds.mathcalT = LatexCmds.calT = LatexCmds.calt = bind(VanillaSymbol, '\\mathcal{T}', '&#x01d4e3;', "mathcal T");
+
+LatexCmds.mathcalF = LatexCmds.calF = LatexCmds.calf = bind(VanillaSymbol, '\\mathcal{F}', '&#x01d4d5;', "mathcal F");
+
+LatexCmds.mathcalL = LatexCmds.calL = LatexCmds.call = bind(VanillaSymbol, '\\mathcal{L}', '&#x01d4db;', "mathcal L");
+
+LatexCmds.mathcalI = LatexCmds.calI = LatexCmds.cali = bind(VanillaSymbol, '\\mathcal{I}', '&#x01d4d8;', "mathcal I");
+
+LatexCmds.mathcalH = LatexCmds.calH = LatexCmds.calh = bind(VanillaSymbol, '\\mathcal{H}', '&#x01d4d7;', "mathcal H");
+
+LatexCmds.mathcalM = LatexCmds.calM = LatexCmds.calm = bind(VanillaSymbol, '\\mathcal{M}', '&#x01d4dc;', "mathcal M");
+LatexCmds.mathcalN = LatexCmds.calN = LatexCmds.caln = bind(VanillaSymbol, '\\mathcal{N}', '&#x01d4dd;', "mathcal N");
+LatexCmds.mathcalV = LatexCmds.calV = LatexCmds.calv = bind(VanillaSymbol, '\\mathcal{V}', '&#x01d4e5;', "mathcal V");
+
 //spacing
 LatexCmds.quad = LatexCmds.emsp = bind(VanillaSymbol,'\\quad ','    ', '4 spaces');
 LatexCmds.qquad = bind(VanillaSymbol,'\\qquad ','        ', '8 spaces');
