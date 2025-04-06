@@ -140,12 +140,12 @@ LatexCmds.mathcal = P(MathCommand, function(_) {
     var optWhitespace = Parser.optWhitespace;
     return optWhitespace.then(string('{'))
           .then(optWhitespace)
-          .then(regex(/^[NPZQRCHF01]/))
+          .then(regex(/^[A-Z]/))
           .skip(optWhitespace)
           .skip(string('}'))
           .map(function(c) {
               // instantiate the class for the matching char
-              return LatexCmds[c]();
+              return LatexCmds["mathcal" + c]();
     });
   };
 });
