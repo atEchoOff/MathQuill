@@ -278,7 +278,7 @@ LatexCmds.heartsuit = bind(VanillaSymbol, '\\heartsuit ', '&#9825;', 'heart suit
 LatexCmds.spadesuit = bind(VanillaSymbol, '\\spadesuit ', '&#9824;', 'spade suit');
 //not real LaTex command see https://github.com/mathquill/mathquill/pull/552 for more details
 LatexCmds.parallelogram = bind(VanillaSymbol, '\\parallelogram ', '&#9649;', 'parallelogram');
-LatexCmds.square = bind(VanillaSymbol, '\\square ', '&#11036;', 'square');
+LatexCmds.square = LatexCmds.qed = bind(VanillaSymbol, '\\square ', '&#11036;', 'square');
 
 //variable-sized
 LatexCmds.oint = bind(VanillaSymbol, '\\oint ', '&#8750;', 'o int');
