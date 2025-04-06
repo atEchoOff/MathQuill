@@ -1348,7 +1348,7 @@ Environments.matrix = P(Environment, function(_, super_) {
 
   var delimiters = {
     column: '&',
-    row: '\\\\\n'
+    row: '\\\\'
   };
   _.parentheses = {
     left: null,
