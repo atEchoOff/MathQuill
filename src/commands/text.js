@@ -360,8 +360,8 @@ LatexCmds.uppercase =
   makeTextBlock('\\uppercase', 'Uppercase', 'span', 'style="text-transform:uppercase" class="mq-text-mode"');
 LatexCmds.lowercase =
   makeTextBlock('\\lowercase', 'Lowercase', 'span', 'style="text-transform:lowercase" class="mq-text-mode"');
-LatexCmds.label = LatexCmds.tag = 
-  makeTextBlock('\\tag', 'Label', 'span', 'class="mq-label mq-text-mode"')
+LatexCmds.label = LatexCmds.tag = LatexCmds.tagg = 
+  makeTextBlock('\\tagg', 'Label', 'span', 'class="mq-label mq-text-mode"')
 
 LatexCmds.eqref =
   makeTextBlock('\\eqref', 'Reference', 'span', 'class="mq-reference mq-text-mode"')
