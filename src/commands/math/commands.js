@@ -210,8 +210,7 @@ LatexCmds.mathbf = bind(Style, '\\mathbf', 'b', 'class="mq-font"', 'Bold Font');
 LatexCmds.mathsf = bind(Style, '\\mathsf', 'span', 'class="mq-sans-serif mq-font"', 'Serif Font');
 LatexCmds.mathtt = bind(Style, '\\mathtt', 'span', 'class="mq-monospace mq-font"', 'Math Text');
 
-LatexCmds.eqref = LatexCmds.ref = LatexCmds.by =
-  bind(Style, '\\ref', 'span', 'class="mq-reference"', 'Reference')
+LatexCmds.tag = bind(Style, '\\tag', 'span', 'class="mq-tag"', '');
 //text-decoration
 LatexCmds.underline = bind(Style, '\\underline', 'span', 'class="mq-non-leaf mq-underline"', 'Underline');
 LatexCmds.overline = LatexCmds.bar = bind(Style, '\\overline', 'span', 'class="mq-non-leaf mq-overline"', 'Overline');

@@ -176,29 +176,34 @@
     font-weight: bold;
   }
 
-  .mq-label {
+  .mq-label,.mq-tag {
     position:fixed;
     right: 100px;
   }
 
-  .mq-label::before {
+  .mq-label::before,.mq-tag::before {
     content: "(";
   }
 
-  .mq-label::after {
+  .mq-label::after,.mq-tag::after {
     content: ")";
   }
 
   .mq-reference {
+    color: blue;
+    cursor: pointer;
+  }
+
+  .mq-by {
     position:fixed;
     right: 100px;
   }
 
-  .mq-reference::before {
+  .mq-by::before {
     content: "(by ";
   }
 
-  .mq-reference::after {
+  .mq-by::after {
     content: ")";
   }
 
