@@ -363,9 +363,6 @@ LatexCmds.lowercase =
 LatexCmds.label = LatexCmds.tag = LatexCmds.tagg = 
   makeTextBlock('\\tagg', 'Label', 'span', 'class="mq-label mq-text-mode"')
 
-LatexCmds.eqref = LatexCmds.ref = LatexCmds.by =
-  makeTextBlock('\\ref', 'Reference', 'span', 'class="mq-reference mq-text-mode"')
-
 var RootMathCommand = P(MathCommand, function(_, super_) {
   _.init = function(cursor) {
     super_.init.call(this, '$');
