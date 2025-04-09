@@ -1381,7 +1381,7 @@ Environments.matrix = P(Environment, function(_, super_) {
         scale(parens, min(1 + .2*(height - 1), 1.2), 1.05*height);
       }
 
-      if (this.isAlign) {
+      if (this.extraClass === "mq-align") {
         this.align();
       }
     }, 0);
@@ -1477,7 +1477,7 @@ Environments.matrix = P(Environment, function(_, super_) {
     });
 
     this.htmlTemplate =
-        '<span class="mq-matrix' + (this.isAlign ? ' mq-align' : '') + ' mq-non-leaf">'
+        '<span class="mq-matrix ' + this.extraClass + ' mq-non-leaf">'
       +   parenHtml(this.parentheses.left)
       +   '<table class="mq-non-leaf">'
       +     trs.replace(/\$tds/g, function () {
@@ -1506,7 +1506,7 @@ Environments.matrix = P(Environment, function(_, super_) {
     return this.ctrlSeq.replace('\\', '');
   }
   _.generateHtmlTemplate = function(numRows, numColumns) {
-    var matrix = '<span class="mq-matrix' + (this.isAlign ? ' mq-align' : '') + ' mq-non-leaf">' + parenTemplate(this.parentheses.left);
+    var matrix = '<span class="mq-matrix ' + this.extraClass + ' mq-non-leaf">' + parenTemplate(this.parentheses.left);
     matrix += '<table class="mq-non-leaf">';
 
     numRows = 1;
@@ -1761,7 +1761,17 @@ Environments.matrix = P(Environment, function(_, super_) {
 
 Environments.align = P(Matrix, function(_, super_) {
   _.envType = 'align';
-  _.isAlign = true;
+  _.extraClass = 'mq-align';
+
+  _.parentheses = {
+    left: '',
+    right: ''
+  };
+});
+
+Environments.table = P(Matrix, function(_, super_) {
+  _.envType = 'table';
+  _.extraClass = 'mq-table';
 
   _.parentheses = {
     left: '',
@@ -1771,6 +1781,7 @@ Environments.align = P(Matrix, function(_, super_) {
 
 Environments.pmatrix = P(Matrix, function(_, super_) {
   _.envType = 'pmatrix';
+  _.extraClass = '';
 
   _.parentheses = {
     left: '(',
@@ -1780,6 +1791,7 @@ Environments.pmatrix = P(Matrix, function(_, super_) {
 
 Environments.cases = P(Matrix, function(_, super_) {
   _.envType = 'cases';
+  _.extraClass = '';
 
   _.parentheses = {
     left: '{',
@@ -1789,6 +1801,7 @@ Environments.cases = P(Matrix, function(_, super_) {
 
 Environments.bmatrix = P(Matrix, function(_, super_) {
   _.envType = 'bmatrix';
+  _.extraClass = '';
 
   _.parentheses = {
     left: '[',
@@ -1798,6 +1811,7 @@ Environments.bmatrix = P(Matrix, function(_, super_) {
 
 Environments.Bmatrix = P(Matrix, function(_, super_) {
   _.envType = 'Bmatrix';
+  _.extraClass = '';
 
   _.parentheses = {
     left: '{',
@@ -1807,6 +1821,7 @@ Environments.Bmatrix = P(Matrix, function(_, super_) {
 
 Environments.vmatrix = P(Matrix, function(_, super_) {
   _.envType = 'vmatrix';
+  _.extraClass = '';
 
   _.parentheses = {
     left: '|',
@@ -1816,6 +1831,7 @@ Environments.vmatrix = P(Matrix, function(_, super_) {
 
 Environments.Vmatrix = P(Matrix, function(_, super_) {
   _.envType = 'Vmatrix';
+  _.extraClass = '';
 
   _.parentheses = {
     left: '&#8214;',
