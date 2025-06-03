@@ -40,12 +40,12 @@ LatexCmds.sup = LatexCmds.supset = LatexCmds.superset =
 
 LatexCmds.nsub = LatexCmds.notsub =
 LatexCmds.nsubset = LatexCmds.notsubset =
-  bind(BinaryOperator,'\\not\\subset ','&#8836;', 'not a subset');
+  bind(BinaryOperator,'\\nsubset ','&#8836;', 'not a subset');
 
 LatexCmds.nsup = LatexCmds.notsup =
 LatexCmds.nsupset = LatexCmds.notsupset =
 LatexCmds.nsuperset = LatexCmds.notsuperset =
-  bind(BinaryOperator,'\\not\\supset ','&#8837;', 'not a superset');
+  bind(BinaryOperator,'\\nsupset ','&#8837;', 'not a superset');
 
 LatexCmds.sube = LatexCmds.subeq = LatexCmds.subsete = LatexCmds.subseteq =
   bind(BinaryOperator,'\\subseteq ','&sube;', 'subset or equal to');
@@ -59,7 +59,7 @@ LatexCmds.nsube = LatexCmds.nsubeq =
 LatexCmds.notsube = LatexCmds.notsubeq =
 LatexCmds.nsubsete = LatexCmds.nsubseteq =
 LatexCmds.notsubsete = LatexCmds.notsubseteq =
-  bind(BinaryOperator,'\\not\\subseteq ','&#8840;', 'not subset or equal to');
+  bind(BinaryOperator,'\\nsubseteq ','&#8840;', 'not subset or equal to');
 
 LatexCmds.nsupe = LatexCmds.nsupeq =
 LatexCmds.notsupe = LatexCmds.notsupeq =
@@ -67,7 +67,7 @@ LatexCmds.nsupsete = LatexCmds.nsupseteq =
 LatexCmds.notsupsete = LatexCmds.notsupseteq =
 LatexCmds.nsupersete = LatexCmds.nsuperseteq =
 LatexCmds.notsupersete = LatexCmds.notsuperseteq =
-  bind(BinaryOperator,'\\not\\supseteq ','&#8841;', 'not superset or equal to');
+  bind(BinaryOperator,'\\nsupseteq ','&#8841;', 'not superset or equal to');
 
 //the canonical sets of numbers
 LatexCmds.mathbb = P(MathCommand, function(_) {
