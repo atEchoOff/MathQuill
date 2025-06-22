@@ -347,6 +347,10 @@
     padding: 0 .2em;
   }
 
+  .mq-fraction:has(.underbrace) {
+    vertical-align: 0em !important;
+  }
+
   // Firefox 2 (and older?) only
   // because display:inline-block is FUBAR in Gecko < 1.9.0
   .mq-fraction, .mq-large-operator, x:-moz-any-link {
@@ -368,6 +372,7 @@
 
   .mq-ub-numerator {
     position:relative;
+    font-size: 112% !important; // Keep the same font size as normal text
   }
 
   .mq-ub-numerator .underbrace {
