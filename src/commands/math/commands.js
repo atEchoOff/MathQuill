@@ -202,6 +202,7 @@ LatexCmds.mathrm = P(Style, function(_, super_) {
 });
 
 LatexCmds.aligned = bind(Style, '\\aligned', 'span', 'class="mq-aligned"', '');
+LatexCmds.var = LatexCmds.let = bind(Style, '\\var', 'span', 'class="mq-sympy-variable"', '');
 
 LatexCmds.fnt = LatexCmds.vect = bind(Style, '\\fnt', 'span', 'class="mq-bold mq-font"', 'Vector');
 LatexCmds.vecf = bind(Style, '\\vecf', 'span', 'class="mq-bold mq-italic mq-font"', 'Vector');
