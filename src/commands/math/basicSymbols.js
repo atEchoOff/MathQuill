@@ -704,6 +704,8 @@ LatexCmds.forall = P(VanillaSymbol, function(_, super_) {
   };
 });
 
+LatexCmds.checkmark = LatexCmds.check = LatexCmds.mark = bind(NonSymbolaSymbol,'\\checkmark ','&check;', 'check mark');
+
 // symbols that aren't a single MathCommand, but are instead a whole
 // Fragment. Creates the Fragment from a LaTeX string
 var LatexFragment = P(MathCommand, function(_) {
