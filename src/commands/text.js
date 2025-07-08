@@ -362,7 +362,7 @@ LatexCmds.lowercase =
   makeTextBlock('\\lowercase', 'Lowercase', 'span', 'style="text-transform:lowercase" class="mq-text-mode"');
 LatexCmds.label = LatexCmds.labell = // Need this for lateks, feel free to replace labell with label
   makeTextBlock('\\labell', 'Label', 'span', 'class="mq-label mq-text-mode"')
-LatexCmds.eqref = makeTextBlock('\\eqref', '', 'span', 'class="mq-reference mq-text-mode"')
+LatexCmds.eqref = makeTextBlock('\\eqref', '', 'span', 'class="reference mq-text-mode"')
 
 var RootMathCommand = P(MathCommand, function(_, super_) {
   _.init = function(cursor) {
