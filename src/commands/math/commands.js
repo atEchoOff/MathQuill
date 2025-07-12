@@ -241,6 +241,8 @@ LatexCmds.norightborder = LatexCmds.tablenorightborder = LatexCmds.nrb =
 LatexCmds.aligned = bind(Style, '\\aligned', 'span', 'class="mq-aligned"', '');
 LatexCmds.var = LatexCmds.let = bind(Style, '\\var', 'span', 'class="mq-sympy-variable"', '');
 
+LatexCmds.caption = bind(Style, '\\caption', 'span', 'class="mq-caption"', 'Vector');
+
 LatexCmds.fnt = LatexCmds.vect = bind(Style, '\\fnt', 'span', 'class="mq-bold mq-font"', 'Vector');
 LatexCmds.vecf = bind(Style, '\\vecf', 'span', 'class="mq-bold mq-italic mq-font"', 'Vector');
 LatexCmds.mathit = bind(Style, '\\mathit', 'i', 'class="mq-font"', 'Italic Font');
