@@ -1498,14 +1498,32 @@ Environments.matrix = P(Environment, function(_, super_) {
         cellLatex = cellLatex.substring(cellLatex.indexOf("]") + 2, cellLatex.length - 1);
       }
 
-      if ((cell.jQ[0].colSpan !== undefined) && (cell.jQ[0].colSpan > 1)) {
-        // We need to place mergeright in cellLatex
-        cellLatex = "\\mergeright[" + cell.jQ[0].colSpan + "]{" + cellLatex + "}";
+      // Determine the colSpan and rowSpan for the cell
+      var currentColSpan = 1;
+      var currentRowSpan = 1;
+
+      // 1. Prioritize the DOM element if it exists, as it reflects interactive changes
+      if (cell.jQ && cell.jQ[0] && cell.jQ[0].colSpan) {
+        currentColSpan = cell.jQ[0].colSpan;
+      } 
+      // 2. Fall back to the cell's internal property, which is set by the parser
+      else if (cell.colSpan) {
+        currentColSpan = cell.colSpan;
       }
 
-      else if ((cell.jQ[0].rowSpan !== undefined) && (cell.jQ[0].rowSpan > 1)) {
-        // We (also) need to place mergelower in cellLatex
-        cellLatex = "\\mergelower[" + cell.jQ[0].rowSpan + "]{" + cellLatex + "}";
+      // Do the same for rowSpan
+      if (cell.jQ && cell.jQ[0] && cell.jQ[0].rowSpan) {
+        currentRowSpan = cell.jQ[0].rowSpan;
+      } else if (cell.rowSpan) {
+        currentRowSpan = cell.rowSpan;
+      }
+
+      // Re-apply the merge command based on the determined span value
+      if (currentColSpan > 1) {
+        cellLatex = "\\mergeright[" + currentColSpan + "]{" + cellLatex + "}";
+      }
+      else if (currentRowSpan > 1) {
+        cellLatex = "\\mergelower[" + currentRowSpan + "]{" + cellLatex + "}";
       }
 
       latex += cellLatex;

@@ -553,6 +553,17 @@
     color:red;
   }
 
+  &.mq-focused .mq-table .mq-no-bottom-border::after {
+    content: "\2193";
+    color: gray;
+  }
+
+  &.mq-focused .mq-table .mq-no-right-border::after {
+    content: "\2192";
+    color: gray;
+  }
+
+
   // Please see the jaltekruse fork of mathquill, the lrn/matrix branch has matrix support!
   // https://github.com/jaltekruse/mathquill/blob/lrn/matrix/src/commands/math/commands.js
   // Thank you to eoghanmcilwaine (Eoghan McIlwaine) for writing this :)
@@ -618,9 +629,5 @@
   .mq-table td {
     padding-left: 10px;
     padding-right: 10px;
-  }
-
-  .mq-merge-left {
-    display: none;
   }
 }
