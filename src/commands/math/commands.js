@@ -2153,19 +2153,27 @@ var MatrixCell = P(MathBlock, function(_, super_) {
         // Nope nope nope
         break;
       }
+
+      if (!this[R] || !(this[R] instanceof MatrixCell) || !(this[R].row == this.row) 
+        || (this[R].jQ[0].rowSpan !== undefined && this[R].jQ[0].rowSpan > 1)
+        || !(this[R].jQ[0].colSpan === undefined || this[R].jQ[0].colSpan == 1)) {
+        // Dont merge to the right if there is nothing right to merge
+        // OR if right element already has rowspan, dont merge.
+        // OR if right element doesnt have a colspan of 1, dont merge. 
+        break;
+      }
+
       if (this.jQ[0].colSpan === undefined) {
         this.jQ[0].colSpan = 2;
       } else {
         this.jQ[0].colSpan++;
       }
       const temp_this_r = this[R];
-      if (temp_this_r.jQ[0].colSpan === undefined || temp_this_r.jQ[0].colSpan == 1) {
-        try {temp_this_r.downOutOf.upOutOf = this} catch(_) {};
-        try {temp_this_r.upOutOf.downOutOf = this} catch(_) {};
-        try {this[R] = this[R][R]} catch(_) {};
-        try {this[R][L] = this} catch(_) {};
-        try {temp_this_r.jQ[0].remove()} catch(_) {};
-      }
+      try {temp_this_r.downOutOf.upOutOf = this} catch(_) {};
+      try {temp_this_r.upOutOf.downOutOf = this} catch(_) {};
+      try {this[R] = this[R][R]} catch(_) {};
+      try {this[R][L] = this} catch(_) {};
+      try {temp_this_r.jQ[0].remove()} catch(_) {};
       break;
     case 'Ctrl-Down':
       e.preventDefault();
@@ -2173,19 +2181,27 @@ var MatrixCell = P(MathBlock, function(_, super_) {
         // Nope nope nope
         break;
       }
+
+      if (!this.downOutOf || !(this.downOutOf instanceof MatrixCell)
+      || (this.downOutOf.jQ[0].colSpan !== undefined && this.downOutOf.jQ[0].colSpan > 1)
+      || !((this.downOutOf.jQ[0].rowSpan === undefined || this.downOutOf.jQ[0].rowSpan == 1))) {
+        // Dont merge down if there is nothing down to merge
+        // OR if down element already has colspan, dont merge.
+        // OR if down element doesnt have a rowspan of 1, dont merge. 
+        break;
+      }
+      
       if (this.jQ[0].rowSpan === undefined) {
         this.jQ[0].rowSpan = 2;
       } else {
         this.jQ[0].rowSpan++;
       }
       const temp_this_d = this.downOutOf;
-      if (temp_this_d.jQ[0].rowSpan === undefined || temp_this_d.jQ[0].rowSpan == 1) {
-        try {temp_this_d[L][R] = temp_this_d[R]} catch(_) {};
-        try {temp_this_d[R][L] = temp_this_d[L]} catch(_) {};
-        try {this.downOutOf = this.downOutOf.downOutOf} catch(_) {};
-        try {this.downOutOf.upOutOf = this} catch(_) {};
-        try {temp_this_d.jQ[0].remove()} catch(_) {};
-      }
+      try {temp_this_d[L][R] = temp_this_d[R]} catch(_) {};
+      try {temp_this_d[R][L] = temp_this_d[L]} catch(_) {};
+      try {this.downOutOf = this.downOutOf.downOutOf} catch(_) {};
+      try {this.downOutOf.upOutOf = this} catch(_) {};
+      try {temp_this_d.jQ[0].remove()} catch(_) {};
       break;
     }
     return super_.keystroke.apply(this, arguments);
