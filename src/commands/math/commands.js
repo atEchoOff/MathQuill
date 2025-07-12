@@ -201,6 +201,43 @@ LatexCmds.mathrm = P(Style, function(_, super_) {
   };
 });
 
+var Merge = function(direction) {
+  return P(MathCommand, function(_, super_) {
+    _.ctrlSeq = '\\merge' + direction;
+
+    _.htmlTemplate =
+      '<span class="mq-merge-left">&0</span>' +
+      '<span class="mq-merge-right">&1</span>';
+
+    _.textTemplate = ['merge' + direction + '[', ']', '(', ')'];
+
+    _.latex = function() {
+      return '\\merge' + direction + '[' + this.ends[L].latex() + ']{' + this.ends[R].latex() + '}';
+    };
+
+    _.parser = function() {
+      return latexMathParser.optBlock.then(function(optBlock) {
+        return latexMathParser.block.map(function(block) {
+          var mergeright = Merge(direction)();
+          mergeright.blocks = [ optBlock, block ];
+          optBlock.adopt(mergeright, 0, 0);
+          block.adopt(mergeright, optBlock, 0);
+          return mergeright;
+        });
+      }).or(super_.parser.call(this));
+    };
+  });
+}
+
+// Merging cells in matrices/tables (but really for tables)
+LatexCmds.mergeright = Merge("right");
+LatexCmds.mergelower = Merge("lower"); // having the same number of characters is helpful for processing
+
+LatexCmds.nobottomborder = LatexCmds.tablenobottomborder = LatexCmds.nbb =
+  bind(Symbol,'\\nobottomborder ','<span class="mq-no-bottom-border"></span>', '');
+LatexCmds.norightborder = LatexCmds.tablenorightborder = LatexCmds.nrb =
+  bind(Symbol,'\\norightborder ','<span class="mq-no-right-border"></span>', '');
+
 LatexCmds.aligned = bind(Style, '\\aligned', 'span', 'class="mq-aligned"', '');
 LatexCmds.var = LatexCmds.let = bind(Style, '\\var', 'span', 'class="mq-sympy-variable"', '');
 
@@ -1452,13 +1489,34 @@ Environments.matrix = P(Environment, function(_, super_) {
           delimiters.column;
       }
       row = cell.row;
-      latex += cell.latex();
+
+      // We need to rectify the mergeright.
+      let cellLatex = cell.latex();
+      
+      if (cellLatex.startsWith("\\merge")) {
+        // Format: \merge(right/lower)[colSpan]{actual content}
+        cellLatex = cellLatex.substring(cellLatex.indexOf("]") + 2, cellLatex.length - 1);
+      }
+
+      if ((cell.jQ[0].colSpan !== undefined) && (cell.jQ[0].colSpan > 1)) {
+        // We need to place mergeright in cellLatex
+        cellLatex = "\\mergeright[" + cell.jQ[0].colSpan + "]{" + cellLatex + "}";
+      }
+
+      else if ((cell.jQ[0].rowSpan !== undefined) && (cell.jQ[0].rowSpan > 1)) {
+        // We (also) need to place mergelower in cellLatex
+        cellLatex = "\\mergelower[" + cell.jQ[0].rowSpan + "]{" + cellLatex + "}";
+      }
+
+      latex += cellLatex;
     });
 
     return this.wrappers().join(latex);
   };
   _.html = function() {
-    var cells = [], trs = '', i=0, row;
+    var trs = '', i = 0;
+    var currentRow = -1;
+    var currentRowTds = [];
 
     function parenHtml(paren) {
       return (paren) ?
@@ -1467,27 +1525,34 @@ Environments.matrix = P(Environment, function(_, super_) {
         + '</span>' : '';
     }
 
-    // Build <tr><td>.. structure from cells
-    this.eachChild(function (cell) {
-      if (row !== cell.row) {
-        row = cell.row;
-        trs += '<tr>$tds</tr>';
-        cells[row] = [];
+    // Build <tr><td>.. structure from cells, respecting colSpan and rowSpan
+    this.eachChild(function(cell) {
+      if (cell.row !== currentRow) {
+        if (currentRowTds.length > 0) {
+          trs += '<tr>' + currentRowTds.join('') + '</tr>';
+        }
+        currentRow = cell.row;
+        currentRowTds = [];
       }
-      cells[row].push('<td>&'+(i++)+'</td>');
+
+      var colSpanAttr = (cell.colSpan && cell.colSpan > 1) ? ' colspan="' + cell.colSpan + '"' : '';
+      var rowSpanAttr = (cell.rowSpan && cell.rowSpan > 1) ? ' rowspan="' + cell.rowSpan + '"' : '';
+      currentRowTds.push('<td' + colSpanAttr + rowSpanAttr + '>&' + (i++) + '</td>');
     });
 
+    // finish the last row
+    if (currentRowTds.length > 0) {
+      trs += '<tr>' + currentRowTds.join('') + '</tr>';
+    }
+
     this.htmlTemplate =
-        '<span class="mq-matrix ' + this.extraClass + ' mq-non-leaf">'
-      +   parenHtml(this.parentheses.left)
-      +   '<table class="mq-non-leaf">'
-      +     trs.replace(/\$tds/g, function () {
-              return cells.shift().join('');
-            })
-      +   '</table>'
-      +   parenHtml(this.parentheses.right)
-      + '</span>'
-    ;
+      '<span class="mq-matrix ' + this.extraClass + ' mq-non-leaf">' +
+      parenHtml(this.parentheses.left) +
+      '<table class="mq-non-leaf">' +
+      trs +
+      '</table>' +
+      parenHtml(this.parentheses.right) +
+      '</span>';
 
     return super_.html.call(this);
   };
@@ -1543,24 +1608,96 @@ Environments.matrix = P(Environment, function(_, super_) {
     .many()
     .skip(optWhitespace)
     .then(function(items) {
-      var blocks = [];
-      var row = 0;
-      self.blocks = [];
+      // Pass 1: Group parsed items into a 2D array of blocks.
+      var all_rows = [];
+      var current_row_of_cells = [];
+      var current_cell_blocks = [];
 
-      function addCell() {
-        self.blocks.push(MatrixCell(row, self, blocks));
-        blocks = [];
+      // This function now correctly creates empty cells.
+      function endCell() {
+        // The check `if (current_cell_blocks.length > 0)` has been removed.
+        current_row_of_cells.push(current_cell_blocks);
+        current_cell_blocks = [];
       }
 
-      for (var i=0; i<items.length; i+=1) {
+      for (var i = 0; i < items.length; i += 1) {
         if (items[i] instanceof MathBlock) {
-          blocks.push(items[i]);
-        } else {
-          addCell();
-          if (items[i] === delimiters.row) row+=1;
+          current_cell_blocks.push(items[i]);
+        } else { // It's a delimiter
+          endCell();
+          if (items[i] === delimiters.row) {
+            all_rows.push(current_row_of_cells);
+            current_row_of_cells = [];
+          }
         }
       }
-      addCell();
+      endCell(); // Finalize the last cell
+      all_rows.push(current_row_of_cells); // Finalize the last row
+
+      // Pass 2: Process the grid, handling both colspans and rowspans.
+      // This part remains unchanged as it was working correctly.
+      self.blocks = [];
+      var col_rowspan_debt = [];
+
+      for (var r = 0; r < all_rows.length; r++) {
+        var source_row = all_rows[r];
+        var source_col_idx = 0;
+        var target_col_idx = 0;
+        
+        while (source_col_idx < source_row.length) {
+          if (target_col_idx >= col_rowspan_debt.length) {
+            col_rowspan_debt[target_col_idx] = 0;
+          }
+
+          if (col_rowspan_debt[target_col_idx] > 0) {
+            col_rowspan_debt[target_col_idx]--;
+            target_col_idx++;
+            continue;
+          }
+
+          var cell_blocks = source_row[source_col_idx];
+          
+          var tempBlock = MathBlock();
+          for (var j = 0; j < cell_blocks.length; j++) {
+            cell_blocks[j].adopt(tempBlock, tempBlock.ends[R], 0);
+          }
+          var latex = tempBlock.latex();
+
+          var mergeRightMatch = /^\\mergeright\[(\d+)\]\{([\s\S]*)\}$/.exec(latex);
+          var mergeLowerMatch = /^\\mergelower\[(\d+)\]\{([\s\S]*)\}$/.exec(latex);
+          
+          var content_for_cell;
+          var colSpan = 1;
+          var rowSpan = 1;
+
+          if (mergeRightMatch) {
+            colSpan = parseInt(mergeRightMatch[1]);
+            content_for_cell = [ latexMathParser.parse(mergeRightMatch[2]) ];
+          } else if (mergeLowerMatch) {
+            rowSpan = parseInt(mergeLowerMatch[1]);
+            content_for_cell = [ latexMathParser.parse(mergeLowerMatch[2]) ];
+          } else {
+            content_for_cell = cell_blocks;
+          }
+
+          var cell = MatrixCell(r, self, content_for_cell);
+          cell.colSpan = colSpan;
+          cell.rowSpan = rowSpan;
+          self.blocks.push(cell);
+
+          for (var k = 0; k < colSpan; k++) {
+            if ((target_col_idx + k) >= col_rowspan_debt.length) {
+              col_rowspan_debt[target_col_idx + k] = 0;
+            }
+            if (rowSpan > 1) {
+              col_rowspan_debt[target_col_idx + k] = rowSpan - 1;
+            }
+          }
+          
+          source_col_idx++;
+          target_col_idx += colSpan;
+        }
+      }
       return Parser.succeed(self);
     });
   };
@@ -1573,37 +1710,68 @@ Environments.matrix = P(Environment, function(_, super_) {
   // Set up directional pointers between cells
   _.relink = function() {
     var blocks = this.blocks;
-    var rows = [];
-    var row, column, cell;
+    if (!blocks || blocks.length === 0) return;
 
-    // Use a for loop rather than eachChild
-    // as we're still making sure children()
-    // is set up properly
-    for (var i=0; i<blocks.length; i+=1) {
-      cell = blocks[i];
-      if (row !== cell.row) {
-        row = cell.row;
-        rows[row] = [];
-        column = 0;
+    // 1. Build the complete virtual grid first.
+    var grid = this.buildVirtualGrid();
+
+    // Fallback to simple linking if the grid is empty for any reason.
+    if (!grid || grid.length === 0 || grid[0].length === 0) {
+      for (var i = 0; i < blocks.length; i++) {
+        blocks[i][L] = blocks[i - 1] || null;
+        blocks[i][R] = blocks[i + 1] || null;
+        blocks[i].upOutOf = blocks[i].downOutOf = null;
       }
-      rows[row][column] = cell;
-
-      // Set up horizontal linkage
-      cell[R] = blocks[i+1];
-      cell[L] = blocks[i-1];
-
-      // Set up vertical linkage
-      if (rows[row-1] && rows[row-1][column]) {
-        cell.upOutOf = rows[row-1][column];
-        rows[row-1][column].downOutOf = cell;
-      }
-
-      column+=1;
+      this.ends[L] = blocks[0] || null;
+      this.ends[R] = blocks[blocks.length - 1] || null;
+      return;
     }
 
-    // set start and end blocks of matrix
+    var numRows = grid.length;
+
+    // 2. Create a lookup map from a cell's ID to its grid coordinates for efficiency.
+    var cellCoords = {};
+    blocks.forEach(function(cell) {
+        if (cellCoords[cell.id]) return;
+        for (var r = 0; r < numRows; r++) {
+            if (grid[r]) {
+                for (var c = 0; c < grid[r].length; c++) {
+                    if (grid[r][c] === cell) {
+                        cellCoords[cell.id] = { r: r, c: c };
+                        return;
+                    }
+                }
+            }
+        }
+    });
+
+    // 3. Iterate through all blocks to set their pointers.
+    for (var i = 0; i < blocks.length; i++) {
+        var cell = blocks[i];
+
+        // 4. Set up horizontal linkage based on flat array order for row-wrapping.
+        cell[L] = blocks[i - 1] || null;
+        cell[R] = blocks[i + 1] || null;
+
+        // 5. Set up vertical linkage using the pre-built, correct grid.
+        var coords = cellCoords[cell.id];
+        if (coords) {
+            var r = coords.r;
+            var c = coords.c;
+            var rSpan = cell.rowSpan || 1;
+
+            cell.upOutOf = (r > 0) ? grid[r - 1][c] : null;
+            cell.downOutOf = (r + rSpan < numRows) ? grid[r + rSpan][c] : null;
+        } else {
+            // Should not happen if grid is built correctly from blocks
+            cell.upOutOf = null;
+            cell.downOutOf = null;
+        }
+    }
+
+    // 6. Set the matrix's overall start and end blocks.
     this.ends[L] = blocks[0];
-    this.ends[R] = blocks[blocks.length-1];
+    this.ends[R] = blocks[blocks.length - 1];
   };
   // Deleting a cell will also delete the current row and
   // column if they are empty, and relink the matrix.
@@ -1662,75 +1830,170 @@ Environments.matrix = P(Environment, function(_, super_) {
     }
     this.finalizeTree();
   };
-  _.addRow = function(afterCell) {
-    var previous = [], newCells = [], next = [];
-    var newRow = $('<tr></tr>'), row = afterCell.row;
-    var columns = 0, block, column;
 
-    this.eachChild(function (cell) {
-      // Cache previous rows
-      if (cell.row <= row) {
-        previous.push(cell);
+   _.buildVirtualGrid = function() {
+    var grid = [];
+    if (this.blocks.length === 0) return grid;
+
+    // This assumes `this.blocks` is always in the correct DOM order.
+    this.blocks.forEach(function(cell) {
+      var r = cell.row;
+      var c = 0;
+      grid[r] = grid[r] || [];
+      // Find the first available column 'c' in the current row 'r'
+      while(grid[r][c]) {
+        c++;
       }
-      // Work out how many columns
-      if (cell.row === row) {
-        if (cell === afterCell) column = columns;
-        columns+=1;
-      }
-      // Cache cells after new row
-      if (cell.row > row) {
-        cell.row+=1;
-        next.push(cell);
+
+      var rSpan = cell.rowSpan || 1;
+      var cSpan = cell.colSpan || 1;
+
+      // Mark all the grid slots that this cell occupies
+      for (var i = 0; i < rSpan; i++) {
+        var row_ = r + i;
+        grid[row_] = grid[row_] || [];
+        for (var j = 0; j < cSpan; j++) {
+          var col_ = c + j;
+          grid[row_][col_] = cell;
+        }
       }
     });
+    return grid;
+  };
 
-    // Add new cells, one for each column
-    for (var i=0; i<columns; i+=1) {
-      block = MatrixCell(row+1);
-      block.parent = this;
-      newCells.push(block);
-
-      // Create cell <td>s and add to new row
-      block.jQ = $('<td class="mq-empty">')
-        .attr(mqBlockId, block.id)
-        .appendTo(newRow);
+  _.addRow = function(afterCell) {
+    var grid = this.buildVirtualGrid();
+    var insertRowIndex = afterCell.row + 1;
+    var numCols = grid.length > 0 ? grid[0].length : 1;
+    
+    var afterCellCol = -1;
+    // Find the virtual column of the cell the cursor was in
+    if (grid[afterCell.row]) {
+      for (var c = 0; c < numCols; c++) {
+        if (grid[afterCell.row][c] === afterCell) {
+          afterCellCol = c;
+          break;
+        }
+      }
     }
 
-    // Insert the new row
-    this.jQ.find('tr').eq(row).after(newRow);
-    this.blocks = previous.concat(newCells, next);
-    return newCells[column];
+    // Determine which new cells to create for the new row
+    var newCells = [];
+    for (var c = 0; c < numCols; c++) {
+      var cellDirectlyAbove = grid[insertRowIndex - 1] ? grid[insertRowIndex - 1][c] : null;
+      // Does the cell above span down into our new row?
+      if (cellDirectlyAbove && (cellDirectlyAbove.row + (cellDirectlyAbove.rowSpan || 1)) > insertRowIndex) {
+        // Yes, it spans. No new cell needed for this column.
+      } else {
+        // No, it doesn't span. We need a new cell.
+        var newCell = MatrixCell(insertRowIndex);
+        newCell.parent = this;
+        newCells.push({cell: newCell, col: c});
+      }
+    }
+    
+    if (newCells.length === 0) return; // Cannot add a row that is entirely spanned.
+
+    // Find the insertion point in the flat `this.blocks` array
+    var insertAtIndex = this.blocks.length;
+    for (var i = 0; i < this.blocks.length; i++) {
+      if (this.blocks[i].row >= insertRowIndex) {
+        insertAtIndex = i;
+        break;
+      }
+    }
+    
+    // Increment row property of all subsequent blocks
+    for(var i = insertAtIndex; i < this.blocks.length; i++) {
+      this.blocks[i].row += 1;
+    }
+    
+    var newBlockObjects = newCells.map(function(item) { return item.cell; });
+    this.blocks.splice.apply(this.blocks, [insertAtIndex, 0].concat(newBlockObjects));
+    
+    // Create and insert the new <tr> with its <td>s into the DOM
+    var newRowJQ = $('<tr></tr>');
+    newBlockObjects.forEach(function(cell) {
+      cell.jQ = $('<td class="mq-empty">').attr(mqBlockId, cell.id).appendTo(newRowJQ);
+    });
+    this.jQ.find('tr').eq(afterCell.row).after(newRowJQ);
+
+    // Find which of the new cells to return for cursor focus
+    var focusCell = newBlockObjects[0];
+    for(var i = 0; i < newCells.length; i++) {
+        if (newCells[i].col === afterCellCol) {
+            focusCell = newCells[i].cell;
+            break;
+        }
+    }
+    
+    return focusCell;
   };
   _.addColumn = function(afterCell) {
-    var rows = [], newCells = [];
-    var column, block;
+    var grid = this.buildVirtualGrid();
+    var numRows = grid.length;
+    var numCols = numRows > 0 ? grid[0].length : 0;
+    
+    var afterCellCoords = { r: -1, c: -1 };
+    if (grid[afterCell.row]) {
+      for (var c = 0; c < numCols; c++) {
+        if (grid[afterCell.row][c] === afterCell) {
+          afterCellCoords = { r: afterCell.row, c: c };
+          break;
+        }
+      }
+    }
+    var insertColIndex = afterCellCoords.c + 1;
+    
+    var newCellsToCreate = [];
+    var focusCell = null;
 
-    // Build rows array and find new column index
-    this.eachChild(function (cell) {
-      rows[cell.row] = rows[cell.row] || [];
-      rows[cell.row].push(cell);
-      if (cell === afterCell) column = rows[cell.row].length;
-    });
+    // For each row, decide whether to increase a colspan or insert a new cell
+    for (var r = 0; r < numRows; r++) {
+      if (!grid[r]) continue;
+      var cellToTheLeft = insertColIndex > 0 ? grid[r][insertColIndex - 1] : null;
+      var cellAtInsertionPoint = insertColIndex < numCols ? grid[r][insertColIndex] : null;
 
-    // Add new cells, one for each row
-    for (var i=0; i<rows.length; i+=1) {
-      block = MatrixCell(i);
-      block.parent = this;
-      newCells.push(block);
-      rows[i].splice(column, 0, block);
-
-      block.jQ = $('<td class="mq-empty">')
-        .attr(mqBlockId, block.id);
+      if (cellToTheLeft && cellToTheLeft === cellAtInsertionPoint) {
+        // The cell to the left spans over the insertion point. Increase its colspan.
+        cellToTheLeft.colSpan = (cellToTheLeft.colSpan || 1) + 1;
+        cellToTheLeft.jQ.attr('colspan', cellToTheLeft.colSpan);
+      } else {
+        // This row needs a new cell.
+        var newCell = MatrixCell(r);
+        newCell.parent = this;
+        newCellsToCreate.push({ cell: newCell, row: r, insertAfter: cellToTheLeft });
+        if (r === afterCell.row) {
+          focusCell = newCell;
+        }
+      }
     }
 
-    // Add cell <td> elements in correct positions
-    this.jQ.find('tr').each(function (i) {
-      $(this).find('td').eq(column-1).after(rows[i][column].jQ);
-    });
+    if (newCellsToCreate.length === 0) return afterCell;
 
-    // Flatten the rows array-of-arrays
-    this.blocks = [].concat.apply([], rows);
-    return newCells[afterCell.row];
+    // Insert new cells into the DOM and the `this.blocks` array.
+    // We iterate backwards to keep indices stable.
+    for (var i = newCellsToCreate.length - 1; i >= 0; i--) {
+        var item = newCellsToCreate[i];
+        var newCell = item.cell;
+        var r = item.row;
+        var insertAfterCell = item.insertAfter;
+
+        // Insert into DOM
+        newCell.jQ = $('<td class="mq-empty">').attr(mqBlockId, newCell.id);
+        var tr = this.jQ.find('tr').eq(r);
+        if (insertAfterCell && insertAfterCell.jQ.closest('tr')[0] === tr[0]) {
+            insertAfterCell.jQ.after(newCell.jQ);
+        } else {
+            tr.prepend(newCell.jQ); // Simplified fallback
+        }
+
+        // Insert into the `this.blocks` array
+        var insertAtIndex = this.blocks.indexOf(insertAfterCell) + 1;
+        this.blocks.splice(insertAtIndex, 0, newCell);
+    }
+    
+    return focusCell || afterCell;
   };
   _.insert = function(method, afterCell, ctrlr) {
     var cellToFocus = this[method](afterCell);
@@ -1863,6 +2126,46 @@ var MatrixCell = P(MathBlock, function(_, super_) {
       break;
     case 'Shift-Down':
       return this.parent.insert('addRow', this, ctrlr);
+      break;
+    case 'Ctrl-Right':
+      e.preventDefault();
+      if (this.jQ[0].rowSpan !== undefined && this.jQ[0].rowSpan > 1) {
+        // Nope nope nope
+        break;
+      }
+      if (this.jQ[0].colSpan === undefined) {
+        this.jQ[0].colSpan = 2;
+      } else {
+        this.jQ[0].colSpan++;
+      }
+      const temp_this_r = this[R];
+      if (temp_this_r.jQ[0].colSpan === undefined || temp_this_r.jQ[0].colSpan == 1) {
+        try {temp_this_r.downOutOf.upOutOf = this} catch(_) {};
+        try {temp_this_r.upOutOf.downOutOf = this} catch(_) {};
+        try {this[R] = this[R][R]} catch(_) {};
+        try {this[R][L] = this} catch(_) {};
+        try {temp_this_r.jQ[0].remove()} catch(_) {};
+      }
+      break;
+    case 'Ctrl-Down':
+      e.preventDefault();
+      if (this.jQ[0].colSpan !== undefined && this.jQ[0].colSpan > 1) {
+        // Nope nope nope
+        break;
+      }
+      if (this.jQ[0].rowSpan === undefined) {
+        this.jQ[0].rowSpan = 2;
+      } else {
+        this.jQ[0].rowSpan++;
+      }
+      const temp_this_d = this.downOutOf;
+      if (temp_this_d.jQ[0].rowSpan === undefined || temp_this_d.jQ[0].rowSpan == 1) {
+        try {temp_this_d[L][R] = temp_this_d[R]} catch(_) {};
+        try {temp_this_d[R][L] = temp_this_d[L]} catch(_) {};
+        try {this.downOutOf = this.downOutOf.downOutOf} catch(_) {};
+        try {this.downOutOf.upOutOf = this} catch(_) {};
+        try {temp_this_d.jQ[0].remove()} catch(_) {};
+      }
       break;
     }
     return super_.keystroke.apply(this, arguments);

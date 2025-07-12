@@ -598,14 +598,29 @@
 
   .mq-table table {
     border-collapse: collapse;
+    border-top: 1px solid;
+    border-left: 1px solid;
   }
 
-  .mq-table tr, .mq-table td {
-    border: 1px solid;
+  .mq-table td {
+    border-bottom: 1px solid;
+    border-right: 1px solid;
+  }
+
+  td:has(.mq-no-bottom-border) {
+    border-bottom: none !important;
+  }
+
+  td:has(.mq-no-right-border) {
+    border-right: none !important;
   }
 
   .mq-table td {
     padding-left: 10px;
     padding-right: 10px;
+  }
+
+  .mq-merge-left {
+    display: none;
   }
 }
