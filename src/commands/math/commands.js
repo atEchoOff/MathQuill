@@ -1984,6 +1984,16 @@ Environments.matrix = P(Environment, function(_, super_) {
       var cellToTheLeft = insertColIndex > 0 ? grid[r][insertColIndex - 1] : null;
       var cellAtInsertionPoint = insertColIndex < numCols ? grid[r][insertColIndex] : null;
 
+      if (cellToTheLeft && cellToTheLeft.rowSpan > 1 && cellToTheLeft.row != r) {
+        // This should be linked to the corresponding element to the left of tall cell
+        if (insertColIndex - 2 < 0) {
+          // Need to wrap around
+          cellToTheLeft = grid[r - 1][numCols - 1];
+        } else {
+          cellToTheLeft = grid[r][insertColIndex - 2];
+        }
+      }
+
       if (cellToTheLeft && cellToTheLeft === cellAtInsertionPoint) {
         // The cell to the left spans over the insertion point. Increase its colspan.
         cellToTheLeft.colSpan = (cellToTheLeft.colSpan || 1) + 1;
