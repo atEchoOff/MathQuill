@@ -1798,59 +1798,67 @@ Environments.matrix = P(Environment, function(_, super_) {
   // Deleting a cell will also delete the current row and
   // column if they are empty, and relink the matrix.
   _.deleteCell = function(currentCell) {
-    var rows = [], columns = [], myRow = [], myColumn = [];
-    var blocks = this.blocks, row, column;
+    var grid = this.buildVirtualGrid();
+    var numRows = grid.length;
+    if (numRows === 0) return;
+    var numCols = 0;
+    for(var r=0; r < numRows; r++) { if(grid[r]) numCols = Math.max(numCols, grid[r].length); }
 
-    // Create arrays for cells in the current row / column
-    this.eachChild(function (cell) {
-      if (row !== cell.row) {
-        row = cell.row;
-        rows[row] = [];
-        column = 0;
-      }
-      columns[column] = columns[column] || [];
-      columns[column].push(cell);
-      rows[row].push(cell);
-
-      if (cell === currentCell) {
-        myRow = rows[row];
-        myColumn = columns[column];
-      }
-
-      column+=1;
-    });
-
-    function isEmpty(cells) {
-      var empties = [];
-      for (var i=0; i<cells.length; i+=1) {
-        if (cells[i].isEmpty()) empties.push(cells[i]);
-      }
-      return empties.length === cells.length;
-    }
-
-    function remove(cells) {
-      for (var i=0; i<cells.length; i+=1) {
-        if (blocks.indexOf(cells[i]) > -1) {
-          cells[i].remove();
-          blocks.splice(blocks.indexOf(cells[i]), 1);
+    var coords = { r: -1, c: -1 };
+    for (var r_ = 0; r_ < numRows; r_++) {
+        if (grid[r_]) {
+            for (var c_ = 0; c_ < numCols; c_++) {
+                if (grid[r_][c_] === currentCell) {
+                    coords = { r: r_, c: c_ };
+                    break;
+                }
+            }
         }
-      }
+        if (coords.r !== -1) break;
     }
+    if (coords.r === -1) return;
+    
+    var R = coords.r;
+    var C = coords.c;
 
-    if (isEmpty(myRow) && myColumn.length > 1) {
-      row = rows.indexOf(myRow);
-      // Decrease all following row numbers
-      this.eachChild(function (cell) {
-        if (cell.row > row) cell.row-=1;
+    var allEmpty = (cellSet) => cellSet.size > 0 && Array.from(cellSet).every(c => c && c.isEmpty());
+
+    var rowCells = new Set(grid[R] ? grid[R].filter(c => c) : []);
+    var colCells = new Set();
+    for (var i = 0; i < numRows; i++) {
+        if (grid[i] && grid[i][C]) colCells.add(grid[i][C]);
+    }
+    
+    if (allEmpty(colCells) && numCols > 1) {
+      // For column deletion, we need to shrink colspans of cells spanning into it
+      var seen = new Set();
+      grid.forEach(function(row) {
+        if (row && row[C] && !seen.has(row[C])) {
+          var cell = row[C];
+          cell.colSpan = (cell.colSpan || 1) - 1;
+          if (cell.colSpan > 0) cell.jQ.attr('colspan', cell.colSpan);
+          else {
+            if (cell.jQ) cell.jQ.remove();
+            this.blocks = this.blocks.filter(b => b !== cell);
+          }
+          seen.add(cell);
+        }
+      }, this);
+
+    } else if (allEmpty(rowCells) && numRows > 1) {
+      var blocksToRemove = Array.from(rowCells).filter(cell => (cell.rowSpan || 1) === 1);
+      
+      // Remove the targeted blocks and the DOM row
+      this.blocks = this.blocks.filter(b => !blocksToRemove.includes(b));
+      this.jQ.find('tr').eq(R).remove();
+
+      // Update row indices of all subsequent cells
+      this.blocks.forEach(function(b) {
+        if (b.row > R) {
+          b.row -= 1;
+        }
       });
-      // Dispose of cells and remove <tr>
-      remove(myRow);
-      this.jQ.find('tr').eq(row).remove();
     }
-    if (isEmpty(myColumn) && myRow.length > 1) {
-      remove(myColumn);
-    }
-    this.finalizeTree();
   };
 
    _.buildVirtualGrid = function() {
@@ -2025,22 +2033,30 @@ Environments.matrix = P(Environment, function(_, super_) {
     this.cursor.insAtRightEnd(cellToFocus);
   };
   _.backspace = function(cell, dir, cursor, finalDeleteCallback) {
-    var dirwards = cell[dir];
     if (cell.isEmpty()) {
+      // Find the logical neighbor *before* modifying the table structure.
+      var neighbor = cell[dir];
+      
+      // Perform the deletion.
       this.deleteCell(cell);
-      while (dirwards &&
-        dirwards[dir] &&
-        this.blocks.indexOf(dirwards) === -1) {
-          dirwards = dirwards[dir];
-      }
-      if (dirwards) {
-        cursor.insAtDirEnd(-dir, dirwards);
-      }
-      if (this.blocks.length === 1 && this.blocks[0].isEmpty()) {
-        finalDeleteCallback();
-        this.finalizeTree();
-      }
+      
+      // After deletion, relink and reflow everything.
+      this.finalizeTree();
       this.bubble(function (node) { node.reflow(); });
+
+      // If the matrix is now totally empty, call the callback to delete it.
+      if (this.blocks.length === 0) {
+        if (finalDeleteCallback) finalDeleteCallback();
+        return;
+      }
+
+      // Move the cursor to the neighbor we found earlier.
+      // If that neighbor was also deleted, move to the last available cell.
+      if (neighbor && this.blocks.indexOf(neighbor) > -1) {
+        cursor.insAtDirEnd(-dir, neighbor);
+      } else {
+        cursor.insAtRightEnd(this.blocks[this.blocks.length - 1]);
+      }
     }
   };
 });
