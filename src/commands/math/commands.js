@@ -1676,26 +1676,28 @@ Environments.matrix = P(Environment, function(_, super_) {
           }
 
           var cell_blocks = source_row[source_col_idx];
-          
-          var tempBlock = MathBlock();
-          for (var j = 0; j < cell_blocks.length; j++) {
-            cell_blocks[j].adopt(tempBlock, tempBlock.ends[R], 0);
-          }
-          var latex = tempBlock.latex();
-
-          var mergeRightMatch = /^\\mergeright\[(\d+)\]\{([\s\S]*)\}$/.exec(latex);
-          var mergeLowerMatch = /^\\mergelower\[(\d+)\]\{([\s\S]*)\}$/.exec(latex);
-          
           var content_for_cell;
           var colSpan = 1;
           var rowSpan = 1;
 
-          if (mergeRightMatch) {
-            colSpan = parseInt(mergeRightMatch[1]);
-            content_for_cell = [ latexMathParser.parse(mergeRightMatch[2]) ];
-          } else if (mergeLowerMatch) {
-            rowSpan = parseInt(mergeLowerMatch[1]);
-            content_for_cell = [ latexMathParser.parse(mergeLowerMatch[2]) ];
+          // Check if the cell's content IS a merge command object.
+          var firstBlock = cell_blocks && cell_blocks[0];
+
+          if (firstBlock && firstBlock.latex().startsWith('\\merge')) {
+            // It IS a merge command object. 
+            var spanBlock = firstBlock.ends[R].ends[L];
+            var contentBlock = firstBlock.ends[R].ends[R];
+            var latex = firstBlock.latex();
+
+            if (latex.substring(0, 11) === '\\mergeright') {
+              colSpan = parseInt(spanBlock.latex()) || 1;
+            } else if (latex.substring(0, 11) === '\\mergelower') {
+              rowSpan = parseInt(spanBlock.latex()) || 1;
+            }
+
+            // Set the new cell's content to be the merge command's content block.
+            // The MatrixCell's init function will correctly adopt its children.
+            content_for_cell = [contentBlock];
           } else {
             content_for_cell = cell_blocks;
           }
@@ -2164,9 +2166,9 @@ var MatrixCell = P(MathBlock, function(_, super_) {
       }
 
       if (this.jQ[0].colSpan === undefined) {
-        this.jQ[0].colSpan = 2;
+        this.colSpan = this.jQ[0].colSpan = 2;
       } else {
-        this.jQ[0].colSpan++;
+        this.colSpan = ++this.jQ[0].colSpan;
       }
       const temp_this_r = this[R];
       try {temp_this_r.downOutOf.upOutOf = this} catch(_) {};
@@ -2174,6 +2176,8 @@ var MatrixCell = P(MathBlock, function(_, super_) {
       try {this[R] = this[R][R]} catch(_) {};
       try {this[R][L] = this} catch(_) {};
       try {temp_this_r.jQ[0].remove()} catch(_) {};
+      var i = this.parent.blocks.indexOf(temp_this_r);
+      this.parent.blocks.splice(i, 1);
       break;
     case 'Ctrl-Down':
       e.preventDefault();
@@ -2192,9 +2196,9 @@ var MatrixCell = P(MathBlock, function(_, super_) {
       }
       
       if (this.jQ[0].rowSpan === undefined) {
-        this.jQ[0].rowSpan = 2;
+        this.rowSpan = this.jQ[0].rowSpan = 2;
       } else {
-        this.jQ[0].rowSpan++;
+        this.rowSpan = ++this.jQ[0].rowSpan;
       }
       const temp_this_d = this.downOutOf;
       try {temp_this_d[L][R] = temp_this_d[R]} catch(_) {};
@@ -2202,6 +2206,8 @@ var MatrixCell = P(MathBlock, function(_, super_) {
       try {this.downOutOf = this.downOutOf.downOutOf} catch(_) {};
       try {this.downOutOf.upOutOf = this} catch(_) {};
       try {temp_this_d.jQ[0].remove()} catch(_) {};
+      var i = this.parent.blocks.indexOf(temp_this_d);
+      this.parent.blocks.splice(i, 1);
       break;
     }
     return super_.keystroke.apply(this, arguments);
