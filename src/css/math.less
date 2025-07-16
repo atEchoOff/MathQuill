@@ -650,9 +650,23 @@
 
   .mq-figure img {
     width: 100%;
+    margin: auto;
     height: auto;
     display: block;
     max-width: 50vw;
+  }
+
+  // Hide mq-cursor before figure and caption, it looks ugly
+  .mq-figure .mq-cursor:has(+ span > img:first-child) {
+    display: none;
+  }
+
+  .mq-figure .mq-cursor:has(+ .mq-caption) {
+    display: none;
+  }
+
+  .mq-figure .mq-caption + .mq-cursor {
+    display: none;
   }
 
   td:has(.mq-no-bottom-border) {
