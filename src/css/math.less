@@ -10,7 +10,7 @@
   padding: 2px;
   .box-sizing(border-box); // supported by IE8+: http://caniuse.com/css3-boxsizing
   white-space: nowrap;
-  overflow: hidden;
+  overflow: visible;
   vertical-align: middle;
 
   .mq-digit {
@@ -180,14 +180,6 @@
   .mq-label,.mq-tag {
     position:fixed;
     right: 100px;
-  }
-
-  .mq-caption .mq-label {
-    position:unset !important;
-  }
-
-  .mq-caption .mq-label::after {
-    content: ") ";
   }
 
   .mq-label::before,.mq-tag::before {
@@ -571,18 +563,6 @@
     color: gray;
   }
 
-  .mq-caption {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    text-align: center;
-  }
-
-  &:has(.mq-caption) {
-    padding-bottom: 1.5em;
-  }
-
   // Please see the jaltekruse fork of mathquill, the lrn/matrix branch has matrix support!
   // https://github.com/jaltekruse/mathquill/blob/lrn/matrix/src/commands/math/commands.js
   // Thank you to eoghanmcilwaine (Eoghan McIlwaine) for writing this :)
@@ -627,13 +607,21 @@
     text-align:left;
   }
 
+  // Text after tables and figures show up below
+  .mq-table, .mq-figure {
+    display: block;
+  }
+
   .mq-table table {
     border-collapse: collapse;
+    display: inline-block;
     border-top: 1px solid;
     border-left: 1px solid;
   }
 
   .mq-figure table {
+    display: inline-block;
+    white-space: normal;
     width: 100%;
   }
 
@@ -643,30 +631,34 @@
     vertical-align: middle;
   }
 
+  // Text goes after images
   .mq-figure td {
-    padding-bottom: 1.5em;
-    position: relative;
+    width: 30vw;
+    overflow-wrap: anywhere;
+  }
+
+  .mq-figure td .mq-label {
+    position:unset !important;
+  }
+
+  .mq-figure td .mq-label::after {
+    content: ")\2001" !important;
+  }
+
+  // Labels after figures and tables go under
+  .mq-figure + .mq-label, .mq-table + .mq-label {
+    position:unset !important;
+  }
+
+  // Wrap text in captions
+  .mq-figure .mq-text-mode {
+    white-space: normal !important;
   }
 
   .mq-figure img {
-    width: 100%;
     margin: auto;
     height: auto;
-    display: block;
-    max-width: 50vw;
-  }
-
-  // Hide mq-cursor before figure and caption, it looks ugly
-  .mq-figure .mq-cursor:has(+ span > img:first-child) {
-    display: none;
-  }
-
-  .mq-figure .mq-cursor:has(+ .mq-caption) {
-    display: none;
-  }
-
-  .mq-figure .mq-caption + .mq-cursor {
-    display: none;
+    width: 30vw;
   }
 
   td:has(.mq-no-bottom-border) {
