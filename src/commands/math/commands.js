@@ -2071,6 +2071,16 @@ Environments.matrix = P(Environment, function(_, super_) {
   };
 });
 
+Environments.figure = P(Matrix, function(_, super_) {
+  _.envType = 'figure';
+  _.extraClass = 'mq-figure';
+
+  _.parentheses = {
+    left: '',
+    right: ''
+  };
+});
+
 Environments.align = P(Matrix, function(_, super_) {
   _.envType = 'align';
   _.extraClass = 'mq-align';

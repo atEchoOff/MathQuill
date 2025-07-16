@@ -186,6 +186,10 @@
     position:unset !important;
   }
 
+  .mq-caption .mq-label::after {
+    content: ") ";
+  }
+
   .mq-label::before,.mq-tag::before {
     content: "(";
   }
@@ -567,11 +571,7 @@
     color: gray;
   }
 
-  .mq-table:has(.mq-caption) {
-    padding-bottom: 1.5em;
-  }
-
-  .mq-table .mq-caption {
+  .mq-caption {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -579,6 +579,9 @@
     text-align: center;
   }
 
+  &:has(.mq-caption) {
+    padding-bottom: 1.5em;
+  }
 
   // Please see the jaltekruse fork of mathquill, the lrn/matrix branch has matrix support!
   // https://github.com/jaltekruse/mathquill/blob/lrn/matrix/src/commands/math/commands.js
@@ -630,10 +633,26 @@
     border-left: 1px solid;
   }
 
+  .mq-figure table {
+    width: 100%;
+  }
+
   .mq-table td {
     border-bottom: 1px solid;
     border-right: 1px solid;
     vertical-align: middle;
+  }
+
+  .mq-figure td {
+    padding-bottom: 1.5em;
+    position: relative;
+  }
+
+  .mq-figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-width: 50vw;
   }
 
   td:has(.mq-no-bottom-border) {
