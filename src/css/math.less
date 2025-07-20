@@ -631,10 +631,14 @@
     border-left: 1px solid;
   }
 
-  .mq-figure table {
+  .mq-figure table:not(table table) {
     display: inline-block;
     white-space: normal;
-    width: 100%;
+  }
+
+  // Do not display cursors followed by images in this cell. They look bad
+  .mq-figure td .mq-cursor:has(+ span img) {
+    display: none !important;
   }
 
   .mq-table td:not(td td) {
