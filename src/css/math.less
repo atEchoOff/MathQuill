@@ -603,15 +603,20 @@
     }
   }
 
-  .mq-align td {
+  .mq-align td:not(td td) {
     text-align:left;
     padding-left: 20px;
     padding-right: 20px;
   }
 
-  .mq-figure td {
+  .mq-figure td:not(td td) {
     padding-left: 20px;
     padding-right: 20px;
+  }
+
+  .mq-table td:not(td td) {
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   // Text after tables and figures show up below
@@ -619,7 +624,7 @@
     display: block;
   }
 
-  .mq-table table {
+  .mq-table table:not(table table) {
     border-collapse: collapse;
     display: inline-block;
     border-top: 1px solid;
@@ -632,14 +637,14 @@
     width: 100%;
   }
 
-  .mq-table td {
+  .mq-table td:not(td td) {
     border-bottom: 1px solid;
     border-right: 1px solid;
     vertical-align: middle;
   }
 
   // Text goes after images
-  .mq-figure td {
+  .mq-figure td:not(td td) {
     width: 30vw;
     font-size:.8em;
   }
@@ -683,10 +688,5 @@
 
   td:has(.mq-no-right-border) {
     border-right: none !important;
-  }
-
-  .mq-table td {
-    padding-left: 10px;
-    padding-right: 10px;
   }
 }
