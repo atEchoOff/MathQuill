@@ -1460,8 +1460,8 @@ Environments.matrix = P(Environment, function(_, super_) {
       cellsInColumn.forEach(item => {
         let paddingLeft = parseInt(item.cell.style.paddingLeft, 10);
         if (paddingLeft !== paddingLeft) { // isnt that wack?
-          // Its NaN, set to 0
-          paddingLeft = 0;
+          // Its NaN, set to 20 (default padding)
+          paddingLeft = 20;
         }
         // Offset from "0" (left if there were no padding)
         const currentOffset = item.operatorSpan.offsetLeft - paddingLeft;
